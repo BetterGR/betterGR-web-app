@@ -6,13 +6,25 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const router = useRouter();
 
-  const handleLogin = () => {
-    if (username.trim() && password.trim()) {
+  const handleLogin = async () => {
+    if (!username || !password) {
+      alert("Please enter both username and password");
+      return;
+    }
+
+    const response = await fetch("http://localhost:8080/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (response.ok) {
       localStorage.setItem("username", username);
       router.push("/dashboard");
     } else {
-      alert("Please enter both username and password.");
-    }
+      const errorData = await response.json(); 
+      alert(errorData.error);
+    }    
   };
 
   return (

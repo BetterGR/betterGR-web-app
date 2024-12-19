@@ -2,21 +2,35 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
 export default function Dashboard() {
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(""); 
   const router = useRouter();
 
+  // Fetch username from localStorage.
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
+
     if (!storedUsername) {
-      router.push("/"); // Redirect to login if no username is found
+      // If no username is found, redirect to the login page.
+      router.push("/");
     } else {
-      setUsername(storedUsername);
+      setUsername(storedUsername); 
     }
   }, [router]);
 
   const handleLogout = () => {
+    // Clear the username from localStorage and redirect to login.
     localStorage.removeItem("username");
     router.push("/");
+  };
+
+  const goToCourseGrades = () => {
+    const studentId = "admin"; 
+    const courseId = "02360780";  
+
+    router.push({
+      pathname: "/coursegrades",
+      query: { studentId, courseId },
+    });
   };
 
   return (
@@ -26,7 +40,13 @@ export default function Dashboard() {
         <div style={styles.card}>
           <h2>Student Profile</h2>
         </div>
-        <div style={styles.card}>
+        <div
+          style={styles.clickableCard} 
+          onClick={goToCourseGrades}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") goToCourseGrades(); }}
+          role="button"
+          tabIndex="0"
+        >
           <h2>Courses</h2>
         </div>
         <div style={styles.card}>
@@ -73,6 +93,18 @@ const styles = {
     color: "white",
     fontSize: "1.2rem",
     boxShadow: "0 4px 6px rgba(0, 0, 0, 0.5)",
+  },
+  clickableCard: {
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    border: "1px solid gray",
+    borderRadius: "10px",
+    padding: "20px",
+    textAlign: "center",
+    color: "white",
+    fontSize: "1.2rem",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.5)",
+    cursor: "pointer", 
+    outline: "none",   
   },
   button: {
     marginTop: "30px",
