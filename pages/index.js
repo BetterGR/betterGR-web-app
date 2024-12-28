@@ -12,7 +12,7 @@ export default function LoginPage() {
       return;
     }
 
-    const response = await fetch("http://localhost:8080/api/login", {
+    const response = await fetch("http://localhost:1234/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
@@ -22,9 +22,13 @@ export default function LoginPage() {
       localStorage.setItem("username", username);
       router.push("/dashboard");
     } else {
-      const errorData = await response.json(); 
-      alert(errorData.error);
-    }    
+        try {
+            const errorData = await response.json();
+            alert(errorData.error || "Login failed");
+        } catch (e) {
+            alert("Authentication failed");
+        }
+    }
   };
 
   return (
