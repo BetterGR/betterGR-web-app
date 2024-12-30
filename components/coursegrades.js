@@ -25,6 +25,7 @@ export default function CourseGrades() {
       const data = await response.json();
       setGrades(data);
     } catch (err) {
+      console.error("Error fetching grades:", err);
       setError("Error fetching grades.");
     }
   };

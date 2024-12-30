@@ -12,22 +12,32 @@ export default function LoginPage() {
       return;
     }
 
-    const response = await fetch("http://localhost:1234/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    });
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
 
-    if (response.ok) {
-      localStorage.setItem("username", username);
-      router.push("/dashboard");
-    } else {
-        try {
-            const errorData = await response.json();
-            alert(errorData.error || "Login failed");
-        } catch (e) {
-            alert("Authentication failed");
-        }
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Store the tokens from Keycloak
+        localStorage.setItem("access_token", data.access_token);
+        localStorage.setItem("refresh_token", data.refresh_token);
+        localStorage.setItem("username", username);
+        
+        // Log success for debugging
+        console.log("Login successful, tokens stored");
+        
+        router.push("/dashboard");
+      } else {
+        const errorMessage = data.error || "Login failed";
+        alert(errorMessage);
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Authentication failed");
     }
   };
 
