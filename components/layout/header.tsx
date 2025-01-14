@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Menu, Moon, Sun } from "lucide-react";
+import { Bell, Menu, Moon, Sun, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,10 +10,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "next-themes";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import Sidebar from "./sidebar"; // Fixed import
+import Sidebar from "./sidebar";
+import { useRouter } from 'next/navigation';
+import { clearAuthData } from '@/lib/auth';
 
 export default function Header() {
   const { setTheme } = useTheme();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    // Clear all auth data
+    clearAuthData();
+    
+    // Force a page reload to clear any in-memory state
+    window.location.href = '/login';
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -55,6 +66,15 @@ export default function Header() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={handleLogout}
+              className="text-red-500 hover:text-red-700 hover:bg-red-100"
+            >
+              <LogOut className="h-5 w-5" />
+              <span className="sr-only">Logout</span>
+            </Button>
           </div>
         </div>
       </div>

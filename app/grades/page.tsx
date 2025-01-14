@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { isAuthenticated, fetchWithAuth } from '@/lib/auth';
+import { isAuthenticated, fetchWithAuth, getUserId } from '@/lib/auth';
 import { CourseGrades } from '@/components/grades/course-grades';
 
 interface ExamGrade {
@@ -37,22 +37,22 @@ export default function GradesPage() {
 
   useEffect(() => {
     if (!isAuthenticated()) {
+      console.log('User not authenticated, redirecting to login...');
       router.push('/login');
       return;
     }
 
     const fetchGrades = async () => {
       try {
-        const authData = JSON.parse(localStorage.getItem('auth_data') || '{}');
-        const tokenData = authData.access_token ? 
-          JSON.parse(atob(authData.access_token.split('.')[1])) : {};
-        const studentId = tokenData.preferred_username;
-
-        if (!studentId) {
+        const userId = getUserId();
+        console.log('Fetching grades for user:', userId);
+        if (!userId) {
           throw new Error('Student ID not found');
         }
-        console.log('API_URL', API_URL);    
-        const response = await fetchWithAuth(`${API_URL}/api/grades/${studentId}`);
+        
+        const url = `${API_URL}/api/grades/${userId}`;
+        console.log('Making request to:', url);    
+        const response = await fetchWithAuth(url);
         if (!response.ok) {
           throw new Error('Failed to fetch grades');
         }

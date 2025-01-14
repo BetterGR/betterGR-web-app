@@ -31,47 +31,43 @@ export default function LoginPage() {
 
     try {
       setIsLoading(true);
+      console.log('Attempting login...');
+      
       const response = await fetch(`${API_URL}/api/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(credentials)
+        body: JSON.stringify({
+          username: credentials.username.trim(),
+          password: credentials.password
+        })
       });
 
+      const data = await response.json();
+      console.log('Response status:', response.status);
+      console.log('Raw login response:', data);
+
       if (!response.ok) {
-        throw new Error('Invalid credentials');
+        console.error('Error response:', data);
+        throw new Error(data.error || 'Authentication failed');
       }
+
+      console.log('Login successful');
       
-      const data: AuthResponse = await response.json();
-      
-      // Store auth data in localStorage
-      storeAuthData(data);
-      
-      // Set the Authorization header for future requests
-      const token = data.access_token;
-      if (typeof window !== 'undefined') {
-        // Add Authorization header to all future fetch requests
-        const originalFetch = window.fetch;
-        window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-          if (init?.headers) {
-            init.headers = {
-              ...init.headers,
-              'Authorization': `Bearer ${token}`
-            };
-          } else {
-            init = {
-              ...init,
-              headers: {
-                'Authorization': `Bearer ${token}`
-              }
-            };
-          }
-          return originalFetch(input, init);
-        };
+      try {
+        console.log('Storing auth data...');
+        await storeAuthData(data);
+        console.log('Auth data stored successfully');
+        
+        console.log('Redirecting to home page...');
+        router.push('/');  // Root route is our dashboard
+        console.log('Redirection initiated');
+      } catch (navError) {
+        console.error('Navigation or storage error:', navError);
+        throw navError;
       }
-      
-      router.push('/');
+
     } catch (error) {
       console.error('Login error:', error);
       setError(error instanceof Error ? error.message : 'Login failed');
@@ -98,36 +94,41 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {error && (
-            <div className="text-red-500 text-sm">{error}</div>
-          )}
-          <div className="space-y-2">
-            <Input
-              type="text"
-              name="username"
-              placeholder="Username"
-              value={credentials.username}
-              onChange={handleInputChange}
-              className="h-12 text-lg"
-            />
-          </div>
-          <div className="space-y-2">
-            <Input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={credentials.password}
-              onChange={handleInputChange}
-              className="h-12 text-lg"
-            />
-          </div>
-          <Button 
-            onClick={handleLogin}
-            className="w-full h-12 text-lg"
-            disabled={isLoading}
-          >
-            {isLoading ? "Signing in..." : "Sign In"}
-          </Button>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            handleLogin();
+          }}>
+            {error && (
+              <div className="text-red-500 text-sm">{error}</div>
+            )}
+            <div className="space-y-2">
+              <Input
+                type="text"
+                name="username"
+                placeholder="Username"
+                value={credentials.username}
+                onChange={handleInputChange}
+                className="h-12 text-lg"
+              />
+            </div>
+            <div className="space-y-2">
+              <Input
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={credentials.password}
+                onChange={handleInputChange}
+                className="h-12 text-lg"
+              />
+            </div>
+            <Button 
+              type="submit"
+              className="w-full h-12 text-lg"
+              disabled={isLoading}
+            >
+              {isLoading ? "Signing in..." : "Sign In"}
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>
