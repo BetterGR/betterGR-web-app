@@ -40,7 +40,7 @@ export default function Header() {
           </SheetContent>
         </Sheet>
         <div className="flex w-full items-center justify-between">
-          <h1 className="text-xl font-bold">Technion Portal</h1>
+          <h1 className="text-xl font-bold ml-4">Technion Portal</h1>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />

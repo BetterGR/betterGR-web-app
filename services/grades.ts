@@ -1,4 +1,5 @@
-import { fetchWithAuth } from '@/lib/api-client';
+import { fetchWithAuth } from '@/lib/auth';
+import { getUserId } from '@/lib/auth';
 
 export interface Grade {
   student_id: string;
@@ -23,9 +24,13 @@ interface HomeworkGrade {
 }
 
 export const gradesService = {
-  getCourseGrades: (courseId: string) => 
-    fetchWithAuth(`/grades/${courseId}`),
+  getCourseGrades: async () => {
+    const studentId = getUserId();
+    return fetchWithAuth(`/grades/${studentId}`);
+  },
 
-  getStudentCourseGrades: (studentId: string, courseId: string) => 
-    fetchWithAuth(`/grades/${studentId}/${courseId}`),
+  getStudentCourseGrades: (courseId: string) =>{
+    const studentId = getUserId();
+    return fetchWithAuth(`/grades/${studentId}/${courseId}`);
+  },
 };

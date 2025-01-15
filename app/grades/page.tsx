@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { isAuthenticated, fetchWithAuth, getUserId } from '@/lib/auth';
 import { CourseGrades } from '@/components/grades/course-grades';
+import { gradesService } from '@/services/grades';
 
 interface ExamGrade {
   course: string;
@@ -43,19 +44,9 @@ export default function GradesPage() {
     }
 
     const fetchGrades = async () => {
-      try {
-        const userId = getUserId();
-        console.log('Fetching grades for user:', userId);
-        if (!userId) {
-          throw new Error('Student ID not found');
-        }
-        
-        const url = `${API_URL}/api/grades/${userId}`;
-        console.log('Making request to:', url);    
-        const response = await fetchWithAuth(url);
-        if (!response.ok) {
-          throw new Error('Failed to fetch grades');
-        }
+      try {    
+        const response = await gradesService.getCourseGrades();
+        console.log('Received grades:', response);
         const data = await response.json();
         console.log('Received grades:', data);
         setGrades(data?.courses || []);

@@ -28,11 +28,6 @@ const routes = [
     icon: GraduationCap,
     href: "/grades",
   },
-  {
-    label: "Staff",
-    icon: Users2,
-    href: "/staff",
-  },
 ];
 
 export default function Sidebar() {

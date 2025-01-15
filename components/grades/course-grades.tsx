@@ -21,9 +21,9 @@ function GradeBar({ grade }: { grade: string }) {
   return (
     <div className="flex items-center gap-4 flex-1 ml-4">
       <span className="font-medium w-16">{grade}%</span>
-      <div className="h-full flex-1 bg-muted rounded-2xl overflow-hidden relative min-h-[40px]">
+      <div className="h-full flex-1 bg-muted rounded-2xl overflow-hidden relative min-h-[10px]">
         <div 
-          className="absolute inset-0 bg-primary transition-all duration-500 ease-out rounded-r-2xl"
+          className="absolute inset-0 bg-[#39FFC4] transition-all duration-500 ease-out rounded-r-2xl"
           style={{ width: `${percentage}%` }}
         />
       </div>

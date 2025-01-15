@@ -1,4 +1,4 @@
-import { fetchWithAuth } from '@/lib/api-client';
+import { fetchWithAuth, getUserId } from '@/lib/auth';
 
 export interface Student {
   id: string;
@@ -11,6 +11,6 @@ interface Course {
 }
 
 export const studentService = {
-  getStudentCourses: (id: string) => 
-    fetchWithAuth(`/students/${id}`),
+  getStudentCourses: () => 
+    fetchWithAuth(`/students/${getUserId()}`),
 };

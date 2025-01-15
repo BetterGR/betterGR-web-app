@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { isAuthenticated, fetchWithAuth, getUserId } from '@/lib/auth';
+import { studentService } from "@/services/students";
 
 export function CoursesList() {
   const [courses, setCourses] = useState<{ id: string; name: string; description?: string }[]>([]);
@@ -22,15 +23,7 @@ export function CoursesList() {
 
     const fetchCourses = async () => {
       try {
-        const userId = getUserId();
-        console.log('Fetching courses for user:', userId);
-        if (!userId) {
-          throw new Error('Student ID not found');
-        }
-        
-        const url = `${API_URL}/api/students/${userId}`;
-        console.log('Making request to:', url);
-        const response = await fetchWithAuth(url);
+        const response = await studentService.getStudentCourses();
         if (!response.ok) {
           throw new Error('Failed to fetch courses');
         }
@@ -84,7 +77,7 @@ export function CoursesList() {
                   className="flex items-center justify-between rounded-lg border p-3"
                 >
                   <div>
-                    <p className="font-medium">{course.name}</p>
+                    <p className="font-medium">{course.name} - {course.id}</p>
                     <p className="text-sm text-muted-foreground">{course.description}</p>
                   </div>
                 </div>

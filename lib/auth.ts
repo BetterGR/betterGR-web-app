@@ -18,6 +18,8 @@ interface StoredAuthData {
   username: string;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_GATEWAY_URL;
+
 // Store the auth data in localStorage
 export const storeAuthData = (data: AuthResponse) => {
   try {
@@ -35,7 +37,7 @@ export const storeAuthData = (data: AuthResponse) => {
       access_token: data.access_token,
       refresh_token: data.refresh_token,
       token_type: data.token_type,
-      expires_at: Date.now() + (data.expires_in * 1000),
+      expires_at: Date.now() + (120 * 1000),
       user_role: data.role,
       user_id: data.user_id,
       username: data.username
@@ -44,8 +46,8 @@ export const storeAuthData = (data: AuthResponse) => {
     // Store in localStorage
     localStorage.setItem('auth_data', JSON.stringify(authData));
     
-    // Also store in cookie for server-side auth
-    document.cookie = `auth_data=${JSON.stringify(authData)}; path=/; max-age=${data.expires_in}`;
+    // Also store in cookie for server-side auth with 2 minutes expiration
+    document.cookie = `auth_data=${JSON.stringify(authData)}; path=/; max-age=120`;
     
     console.log('Auth data stored successfully');
   } catch (error) {
@@ -102,7 +104,7 @@ export const clearAuthData = (): void => {
 };
 
 // Example of how to use the token in API calls
-export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+export const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
   const authData = getAuthData();
   
   if (!authData || !authData.access_token) {
@@ -114,7 +116,7 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
     'Authorization': `Bearer ${authData.access_token}`
   };
 
-  return fetch(url, {
+  return fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers
   });

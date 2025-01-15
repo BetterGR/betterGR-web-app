@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { isAuthenticated, fetchWithAuth, getUserId } from '@/lib/auth';
+import { studentService } from '@/services/students';
 
 interface Course {
   id: string;
@@ -26,15 +27,7 @@ export default function CoursesPage() {
 
     const fetchCourses = async () => {
       try {
-        const userId = getUserId();
-        console.log('Fetching courses for user:', userId);
-        if (!userId) {
-          throw new Error('Student ID not found');
-        }
-
-        const url = `${API_URL}/api/students/${userId}`;
-        console.log('Making request to:', url);
-        const response = await fetchWithAuth(url);
+        const response = await studentService.getStudentCourses();
         if (!response.ok) {
           throw new Error('Failed to fetch courses');
         }
