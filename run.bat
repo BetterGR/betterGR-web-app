@@ -1,7 +1,7 @@
 @echo off
 
 :: Set environment variable
-set NEXT_PUBLIC_API_GATEWAY_URL=http://localhost:1234
+set NEXT_PUBLIC_API_GATEWAY_URL=http://localhost:1234/api
 
 :: Remove the .next directory
 if exist .next (
