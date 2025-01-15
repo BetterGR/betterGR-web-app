@@ -25,12 +25,10 @@ interface HomeworkGrade {
 
 export const gradesService = {
   getCourseGrades: async () => {
-    const studentId = getUserId();
-    return fetchWithAuth(`/grades/${studentId}`);
+    return fetchWithAuth(`/grades/${getUserId()}`);
   },
 
   getStudentCourseGrades: (courseId: string) =>{
-    const studentId = getUserId();
-    return fetchWithAuth(`/grades/${studentId}/${courseId}`);
+    return fetchWithAuth(`/grades/${getUserId()}/${courseId}`);
   },
 };
