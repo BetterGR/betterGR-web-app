@@ -19,12 +19,6 @@ export default function CoursesPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated()) {
-      console.log('User not authenticated, redirecting to login...');
-      router.push('/login');
-      return;
-    }
-
     const fetchCourses = async () => {
       try {
         const response = await studentService.getStudentCourses();
@@ -44,7 +38,7 @@ export default function CoursesPage() {
     };
 
     fetchCourses();
-  }, [API_URL, router]);
+  }, []);
 
   if (isLoading) {
     return (

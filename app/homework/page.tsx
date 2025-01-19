@@ -1,18 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { isAuthenticated } from '@/lib/auth';
-
 export default function HomeworkPage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isAuthenticated()) {
-      router.push('/login');
-    }
-  }, [router]);
-
   return (
     <div className="container mx-auto px-4 py-8 min-h-[80vh] flex items-center justify-center">
       <div className="flex flex-col items-center justify-center space-y-8 text-center max-w-2xl">

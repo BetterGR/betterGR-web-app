@@ -18,12 +18,16 @@ export default function Header() {
   const { setTheme } = useTheme();
   const router = useRouter();
 
-  const handleLogout = () => {
-    // Clear all auth data
-    clearAuthData();
-    
-    // Force a page reload to clear any in-memory state
-    window.location.href = '/login';
+  const handleLogout = async () => {
+    try {
+      // Clear all auth data and redirect to Keycloak logout
+      await clearAuthData();
+      // The clearAuthData function will handle the redirect, so we don't need to do anything else here
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // If there's an error, force a redirect to callback
+      window.location.href = '/callback';
+    }
   };
 
   return (

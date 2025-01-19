@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { isAuthenticated, fetchWithAuth, getUserId } from '@/lib/auth';
+import { fetchWithAuth, getUserId } from '@/lib/auth';
 import { CourseGrades } from '@/components/grades/course-grades';
 import { gradesService } from '@/services/grades';
 
@@ -30,25 +29,18 @@ interface GradesResponse {
 }
 
 export default function GradesPage() {
-  const router = useRouter();
-  const API_URL = process.env.NEXT_PUBLIC_API_GATEWAY_URL;
   const [grades, setGrades] = useState<StudentCourseGrades[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated()) {
-      console.log('User not authenticated, redirecting to login...');
-      router.push('/login');
-      return;
-    }
-
     const fetchGrades = async () => {
       try {    
         const response = await gradesService.getCourseGrades();
-        console.log('Received grades:', response);
+        if (!response.ok) {
+          throw new Error('Failed to fetch grades');
+        }
         const data = await response.json();
-        console.log('Received grades:', data);
         setGrades(data?.courses || []);
       } catch (err) {
         console.error('Error fetching grades:', err);
@@ -60,7 +52,7 @@ export default function GradesPage() {
     };
 
     fetchGrades();
-  }, [API_URL, router]);
+  }, []);
 
   if (isLoading) {
     return (
