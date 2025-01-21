@@ -153,7 +153,7 @@ export const clearAuthData = async (): Promise<void> => {
       
       // Redirect to Keycloak logout endpoint
       window.location.href = `${logoutURL}?` +
-        `client_id=api-gateway` +
+        `client_id=account` +
         `&post_logout_redirect_uri=${redirectUri}`;
     } else {
       // If no token, just redirect to callback

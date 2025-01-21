@@ -11,6 +11,7 @@ interface Course {
 }
 
 export const studentService = {
-  getStudentCourses: () => 
-    fetchWithAuth(`/students/${getUserId()}`),
+  getStudentCourses: async () => {
+    return fetchWithAuth(`/students/${getUserId()}/courses`);
+  },
 };

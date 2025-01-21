@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { storeAuthData } from '@/lib/auth';
+import { storeAuthData, isAuthenticated } from '@/lib/auth';
 
 export default function CallbackPage() {
   const searchParams = useSearchParams();
@@ -56,7 +56,7 @@ export default function CallbackPage() {
       sessionStorage.setItem('oauth_state', state);
 
       const loginURL = `${KEYCLOAK_URL}/realms/betterGR/protocol/openid-connect/auth?` + 
-        `client_id=api-gateway` +
+        `client_id=account` +
         `&response_type=code` +
         `&scope=openid profile email` +
         `&state=${state}` + 
