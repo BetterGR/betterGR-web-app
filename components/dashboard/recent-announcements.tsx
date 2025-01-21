@@ -5,13 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { courseService } from '@/services/courses';
 import { studentService } from '@/services/students';
-
-interface Announcement {
-  id: string;
-  course: string;
-  message: string;
-  date: string;
-}
+import { Announcement } from '@/services/courses';
 
 export function RecentAnnouncements() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -20,24 +14,21 @@ export function RecentAnnouncements() {
   useEffect(() => {
     async function loadAnnouncements() {
       try {
-        // Assuming we get the student ID from auth context
-        const studentId = "current-user-id";
-        const courses = await studentService.getStudentCourses(studentId);
+        const response = await courseService.getAllAnnouncements();
+        const parsedAnnouncements = response.map(item => {
+          try {
+            const announcementData = JSON.parse(item.announcement);
+            return {
+              ...announcementData,
+              courseId: item.course_id
+            };
+          } catch (e) {
+            console.error('Failed to parse announcement:', e);
+            return null;
+          }
+        }).filter((a): a is Announcement => a !== null);
         
-        // Fetch announcements for each course
-        const announcementsPromises = courses.map(course => 
-          courseService.getCourseAnnouncements(course.id)
-        );
-        
-        const allAnnouncements = await Promise.all(announcementsPromises);
-        const flatAnnouncements = allAnnouncements.flat();
-        
-        // Sort by date
-        const sortedAnnouncements = flatAnnouncements.sort((a, b) => 
-          new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-        
-        setAnnouncements(sortedAnnouncements);
+        setAnnouncements(parsedAnnouncements);
       } catch (error) {
         console.error('Failed to load announcements:', error);
       } finally {
@@ -65,13 +56,13 @@ export function RecentAnnouncements() {
                 key={announcement.id}
                 className="rounded-lg border p-3"
               >
-                <div className="flex items-center justify-between">
-                  <p className="font-medium">{announcement.course}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(announcement.date).toLocaleDateString()}
-                  </p>
+                <div className="flex flex-col space-y-4">
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium">Course {announcement.courseId}</p>
+                    <p className="text-sm text-muted-foreground">{announcement.title}</p>
+                  </div>
+                  <p className="mt-2 text-sm">{announcement.content}</p>
                 </div>
-                <p className="mt-2 text-sm">{announcement.message}</p>
               </div>
             ))}
           </div>

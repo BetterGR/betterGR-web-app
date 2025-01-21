@@ -2,10 +2,10 @@ import { fetchWithAuth, getUserId } from '@/lib/auth';
 
 export interface Student {
   id: string;
-  enrolled_courses: Course[];
+  enrolled_courses: Course_title[];
 }
-
-interface Course {
+  
+export interface Course_title {
   id: string;
   grade: number;
 }
