@@ -3,7 +3,9 @@ import { defineNuxtPlugin } from 'nuxt/app'
 // Simple plugin to add auth token to GraphQL requests
 export default defineNuxtPlugin((nuxtApp) => {
   // Skip on server-side
-  if (process.server) return
+  if (process.server) {
+    return
+  }
   
   // Get GraphQL client
   const { $gql } = nuxtApp
@@ -21,12 +23,17 @@ export default defineNuxtPlugin((nuxtApp) => {
           
           // Only add token if keycloak exists and is authenticated
           if (kc?.authenticated && kc?.token) {
-            if (!context.headers) context.headers = {}
+            if (!context.headers) {
+              context.headers = {}
+            }
             // Use the token type from Keycloak if available, fallback to Bearer
             const tokenType = kc.tokenParsed?.typ || 'Bearer'
             context.headers['Authorization'] = `${tokenType} ${kc.token}`
-            console.log('Added auth token to GraphQL request')
-          } else {
+            // Only log in development mode
+            if (process.env.NODE_ENV === 'development') {
+              console.log('Added auth token to GraphQL request')
+            }
+          } else if (process.env.NODE_ENV === 'development') {
             console.log('No auth token available for GraphQL request')
           }
         } catch (error) {

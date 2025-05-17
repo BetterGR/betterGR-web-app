@@ -1,0 +1,22 @@
+# All submission-related operations
+
+# Queries
+query getSubmission($id: ID!) {
+  submission(id: $id) {
+    id
+    homeworkId
+    studentId
+    submittedAt
+    updatedAt
+  }
+}
+
+query getSubmissionsByStudent($studentId: ID!) {
+  submissionsByStudent(studentId: $studentId) {
+    id
+    homeworkId
+    studentId
+    submittedAt
+    updatedAt
+  }
+} 

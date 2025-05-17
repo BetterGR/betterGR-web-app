@@ -43,6 +43,14 @@ export default defineNuxtConfig({
     public: {
       isDev,
       keycloak: keycloakConfig,
+      // Make the environment variables directly accessible by the same name
+      NUXT_PUBLIC_KEYCLOAK_URL: process.env.NUXT_PUBLIC_KEYCLOAK_URL,
+      NUXT_PUBLIC_KEYCLOAK_REALM: process.env.NUXT_PUBLIC_KEYCLOAK_REALM,
+      NUXT_PUBLIC_KEYCLOAK_CLIENT_ID: process.env.NUXT_PUBLIC_KEYCLOAK_CLIENT_ID,
+      // Keep the old ones for backward compatibility
+      keycloakUrl: process.env.NUXT_PUBLIC_KEYCLOAK_URL || 'http://localhost:8080',
+      keycloakRealm: process.env.NUXT_PUBLIC_KEYCLOAK_REALM || 'master',
+      keycloakClientId: process.env.NUXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'betterGR-web-app',
       content: {
         documentDriven: true,
         navigation: {
