@@ -1,5 +1,6 @@
 import { defineNuxtConfig } from 'nuxt/config'
 import { NuxtConfig } from '@nuxt/types'
+import type Keycloak from 'keycloak-js'
 
 // Validate required environment variables
 const requiredEnvVars = [
@@ -36,21 +37,23 @@ export default defineNuxtConfig({
   typescript: {
     strict: true,
     typeCheck: false,
-    shim: false
+    shim: true
   },
 
   runtimeConfig: {
     public: {
       isDev,
       keycloak: keycloakConfig,
-      // Make the environment variables directly accessible by the same name
+      // GraphQL configuration
+      GQL_HOST: process.env.NUXT_PUBLIC_GRAPHQL_HOST,
+      // Other variables
       NUXT_PUBLIC_KEYCLOAK_URL: process.env.NUXT_PUBLIC_KEYCLOAK_URL,
       NUXT_PUBLIC_KEYCLOAK_REALM: process.env.NUXT_PUBLIC_KEYCLOAK_REALM,
       NUXT_PUBLIC_KEYCLOAK_CLIENT_ID: process.env.NUXT_PUBLIC_KEYCLOAK_CLIENT_ID,
       // Keep the old ones for backward compatibility
-      keycloakUrl: process.env.NUXT_PUBLIC_KEYCLOAK_URL || 'http://localhost:8080',
-      keycloakRealm: process.env.NUXT_PUBLIC_KEYCLOAK_REALM || 'master',
-      keycloakClientId: process.env.NUXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'betterGR-web-app',
+      keycloakUrl: process.env.NUXT_PUBLIC_KEYCLOAK_URL,
+      keycloakRealm: process.env.NUXT_PUBLIC_KEYCLOAK_REALM,
+      keycloakClientId: process.env.NUXT_PUBLIC_KEYCLOAK_CLIENT_ID,
       content: {
         documentDriven: true,
         navigation: {
@@ -159,27 +162,55 @@ export default defineNuxtConfig({
     dirs: ['~/components']
   },
 
-  graphqlClient: {
+  'graphql-client':{
     clients: {
       default: {
-        host: process.env.NUXT_PUBLIC_GRAPHQL_HOST,
-        // Optional websocket endpoint if you need subscriptions
-        wsHost: process.env.NUXT_PUBLIC_GRAPHQL_WS_HOST,
-        retries: 3,
-        // Add token to GraphQL requests
-        tokenName: 'Authorization',
-        tokenType: 'Bearer',
-        tokenStorage: 'none', // Don't store in localStorage or cookies
+        host: '/api/graphql',
+        introspectionHost: process.env.NUXT_PUBLIC_GRAPHQL_HOST,
+        token: {
+          type: 'Bearer',
+          name: 'Authorization',
+          value: (nuxtApp: any) => {
+            // Add robust token handling with debug information
+            try {
+              // Get Keycloak instance from the Nuxt app
+              const keycloak = nuxtApp?.$keycloak
+              
+              // Check if Keycloak exists and is authenticated
+              if (!keycloak) {
+                console.warn('[GraphQL] No Keycloak instance found')
+                return ''
+              }
+              
+              if (!keycloak.authenticated) {
+                console.warn('[GraphQL] Keycloak not authenticated')
+                return ''
+              }
+              
+              // Only return the token if it exists
+              if (keycloak.token) {
+                // Only log a truncated token in development
+                if (process.env.NODE_ENV === 'development') {
+                  const truncToken = keycloak.token.substring(0, 15) + '...'
+                  console.log(`[GraphQL] Using token: ${truncToken}`)
+                }
+                return keycloak.token
+              } else {
+                console.warn('[GraphQL] Token is empty or undefined')
+                return ''
+              }
+            } catch (error) {
+              console.error('[GraphQL] Error getting token:', error)
+              return ''
+            }
+          }
+        },
+        retainToken: true
       }
-    },
-    options: {
-      persistedQueries: false,
-      cache: true,
-    },
+    }
   },
 
   plugins: [
     '~/plugins/keycloak.client.ts',
-    '~/plugins/graphql-auth.client.ts',
   ],
 } as any)

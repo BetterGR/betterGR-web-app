@@ -1,30 +1,35 @@
 <template>
-  <div class="py-8">
-    <!-- Authentication Status Banner -->
-    <AuthStatusBanner 
-      :checking="checking" 
-      :is-authenticated="isAuthenticated" 
-      @login="login"
-    />
+  <div class="min-h-screen">
+    <div class="container mx-auto px-6 py-12">
+      <!-- Authentication Status Banner -->
+      <AuthStatusBanner 
+        :checking="checking" 
+        :is-authenticated="isAuthenticated" 
+        @login="login"
+      />
 
-    <!-- Main Content - Only Show When Authenticated -->
-    <Dashboard 
-      v-if="isAuthenticated"
-      :username="username"
-      :current-semester="currentSemester"
-      :filtered-courses="filteredCourses"
-      :upcoming-assignments="upcomingAssignments"
-      :pending="pending"
-      :upcoming="upcoming"
-    />
-    
-    <!-- Placeholder content when checking and not authenticated yet -->
-    <div v-if="checking && !isAuthenticated" class="animate-pulse">
-      <div class="h-40 bg-gray-200 dark:bg-gray-800 rounded-lg mb-8"></div>
-      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
-        <div class="h-24 bg-gray-200 dark:bg-gray-800 rounded-lg"></div>
-        <div class="h-24 bg-gray-200 dark:bg-gray-800 rounded-lg"></div>
-        <div class="h-24 bg-gray-200 dark:bg-gray-800 rounded-lg"></div>
+      <!-- Main Content - Only Show When Authenticated -->
+      <Dashboard 
+        v-if="isAuthenticated"
+        :username="username"
+        :current-semester="currentSemester"
+        :filtered-courses="filteredCourses"
+        :upcoming-assignments="upcomingAssignments"
+        :pending="pending"
+        :upcoming="upcoming"
+        :loading-courses="loadingCourses"
+        :courses-error="coursesError"
+        @retry-courses="retryCourses"
+      />
+      
+      <!-- Placeholder content when checking and not authenticated yet -->
+      <div v-if="checking && !isAuthenticated" class="animate-pulse">
+        <div class="h-40 bg-gray-200 dark:bg-gray-800 rounded-2xl mb-8"></div>
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+          <div class="h-24 bg-gray-200 dark:bg-gray-800 rounded-2xl"></div>
+          <div class="h-24 bg-gray-200 dark:bg-gray-800 rounded-2xl"></div>
+          <div class="h-24 bg-gray-200 dark:bg-gray-800 rounded-2xl"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -51,8 +56,16 @@ const {
   filteredCourses,
   upcomingAssignments,
   pending,
-  upcoming
+  upcoming,
+  loadingCourses,
+  coursesError,
+  fetchCourses
 } = useDashboard()
+
+// Function to retry fetching courses
+const retryCourses = () => {
+  fetchCourses();
+};
 
 // Watch for authentication state changes
 watch(isAuthenticated, (newValue) => {
