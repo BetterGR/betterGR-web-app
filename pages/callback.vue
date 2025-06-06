@@ -51,7 +51,6 @@ onMounted(() => {
   // Determine if authentication was successful
   if (!isAuthenticated.value) {
     // Handle case where we're on callback page but not authenticated
-    console.warn('Reached callback page but not authenticated')
     statusMessage.value = 'Authentication incomplete'
     
     // Give a short delay to see if authentication completes

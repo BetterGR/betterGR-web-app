@@ -1,7 +1,7 @@
 ---
 title: Advanced Web Development
 courseMeta:
-  code: CS304
+  code: cs304
   semester: Spring 2025
   instructor: Dr. Jane Smith
   credits: 3

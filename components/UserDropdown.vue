@@ -34,21 +34,6 @@
         </div>
         <div class="border-t border-gray-100"></div>
         
-        <!-- Debug page option - only visible in development mode -->
-        <NuxtLink
-          v-if="isDev"
-          to="/debug"
-          @click="isOpen = false"
-          class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition"
-        >
-          <div class="flex items-center gap-2">
-            <Bug class="h-4 w-4" />
-            <span>Auth Debug</span>
-          </div>
-        </NuxtLink>
-        
-        <div v-if="isDev" class="border-t border-gray-100"></div>
-        
         <template v-if="isAuthenticated">
           <button
             @click="handleLogout"
@@ -83,13 +68,8 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { ChevronDown, Bug, LogIn, LogOut } from 'lucide-vue-next'
+import { ChevronDown, LogIn, LogOut } from 'lucide-vue-next'
 import { useAuth } from '~/composables/useAuth'
-import { useRuntimeConfig } from 'nuxt/app'
-
-// Check if we're in development mode using runtime config
-const config = useRuntimeConfig()
-const isDev = config.public.isDev || false
 
 // Local reactive state
 const isOpen = ref(false)

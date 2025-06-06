@@ -1,5 +1,4 @@
 import type { Config } from 'tailwindcss'
-import defaultTheme from 'tailwindcss/defaultTheme'
 
 export default <Config>{
   darkMode: 'class',
@@ -61,7 +60,7 @@ export default <Config>{
         sm: 'calc(var(--radius) - 4px)',
       },
       fontFamily: {
-        sans: ['Inter var', ...defaultTheme.fontFamily.sans],
+        sans: ['Inter var', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
     },
   },
