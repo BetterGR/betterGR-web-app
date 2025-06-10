@@ -1,0 +1,16 @@
+overwrite: true
+schema: "http://localhost:1234/query"
+documents: "queries/**/*.gql"
+generates:
+  generated/graphql.ts:
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+    config:
+      avoidOptionals: false
+      scalars:
+        ID: string
+        String: string
+        Boolean: boolean
+        Int: number
+        Float: number 

@@ -1,13 +1,14 @@
 import { defineContentConfig, defineCollection } from '@nuxt/content'
 
-// This file should only define collections
 export default defineContentConfig({
   collections: {
-    courses: defineCollection({
-      // Type 'page' means 1-to-1 relationship between content files and pages
+    content: defineCollection({
       type: 'page',
-      // Match all markdown files in the courses directory
-      source: 'courses/**/*.md'
+      source: '**/*.md'
+    }),
+    courses: defineCollection({
+      type: 'page',
+      source: 'courses/*.md'
     })
   }
 }) 

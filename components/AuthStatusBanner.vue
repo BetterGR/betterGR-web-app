@@ -14,22 +14,31 @@
       <h2 class="text-xl font-bold text-red-800 dark:text-red-400 mb-2">Authentication Required</h2>
       <p class="text-red-700 dark:text-red-300 mb-4">You need to be logged in to access this application.</p>
       <button 
-        @click="$emit('login')" 
-        class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+        @click="handleLogin"
+        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        :disabled="checking"
       >
-        Log In
+        <span v-if="checking" class="inline-block animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></span>
+        {{ checking ? 'Checking...' : 'Login' }}
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{
+// Define props
+const props = defineProps<{
   checking: boolean;
   isAuthenticated: boolean;
 }>();
 
-defineEmits<{
+// Define emits
+const emit = defineEmits<{
   (e: 'login'): void;
 }>();
+
+// Handle login
+const handleLogin = () => {
+  emit('login')
+}
 </script> 

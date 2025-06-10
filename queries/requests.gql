@@ -1,0 +1,363 @@
+# =========================
+# QUERIES
+# =========================
+
+# Student queries
+query GetStudent($id: ID!) {
+  student(id: $id) {
+    id
+    firstName
+    lastName
+    email
+    phoneNumber
+    createdAt
+    updatedAt
+  }
+}
+
+# Staff queries
+query GetStaff($id: ID!) {
+  staff(id: $id) {
+    id
+    firstName
+    lastName
+    email
+    phoneNumber
+    title
+    office
+    createdAt
+    updatedAt
+  }
+}
+
+# Course queries
+query GetCourse($id: ID!) {
+  course(id: $id) {
+    id
+    name
+    semester
+    description
+    createdAt
+    updatedAt
+  }
+}
+
+ query semesterCourses($semester: String!) {
+   semesterCourses(semester: $semester) {
+     id
+     name
+     description
+     createdAt
+     updatedAt
+   }
+ }
+
+query GetCourseStudents($courseId: ID!) {
+  courseStudents(courseId: $courseId) {
+    id
+    firstName
+    lastName
+  }
+}
+
+query GetCourseStaff($courseId: ID!) {
+  courseStaff(courseId: $courseId) {
+    id
+    firstName
+    lastName
+  }
+}
+
+query GetStudentCourses($studentId: ID!) {
+  studentCourses(studentId: $studentId) {
+    id
+    name
+    semester
+    description
+  }
+}
+
+query GetStaffCourses($staffId: ID!) {
+  staffCourses(staffId: $staffId) {
+    id
+    name
+    semester
+  }
+}
+
+# Grade queries
+query GetGrade($id: ID!) {
+  grade(id: $id) {
+    id
+    studentId
+    courseId
+    semester
+    gradeType
+    itemId
+    gradeValue
+    gradedBy
+    comments
+    gradedAt
+    updatedAt
+  }
+}
+
+query GetGrades($studentId: ID, $courseId: ID) {
+  grades(studentId: $studentId, courseId: $courseId) {
+    id
+    studentId
+    courseId
+    semester
+    gradeType
+    itemId
+    gradeValue
+  }
+}
+
+query GetCourseGrades($courseId: ID!, $semester: String!) {
+  courseGrades(courseId: $courseId, semester: $semester) {
+    id
+    studentId
+    gradeValue
+  }
+}
+
+query GetStudentCourseGrades($studentId: ID!, $courseId: ID!, $semester: String!) {
+  studentCourseGrades(studentId: $studentId, courseId: $courseId, semester: $semester) {
+    id
+    gradeType
+    gradeValue
+  }
+}
+
+query GetStudentSemesterGrades($studentId: ID!, $semester: String!) {
+  studentSemesterGrades(studentId: $studentId, semester: $semester) {
+    id
+    courseId
+    gradeValue
+  }
+}
+
+# Homework queries
+query GetHomework($id: ID!) {
+  homework(id: $id) {
+    id
+    courseId
+    title
+    description
+    dueDate
+  }
+}
+
+query GetHomeworkByCourse($courseId: ID!) {
+  homeworkByCourse(courseId: $courseId) {
+    id
+    title
+    dueDate
+  }
+}
+
+# Submission queries
+query GetSubmission($id: ID!) {
+  submission(id: $id) {
+    id
+    homeworkId
+    studentId
+    submittedAt
+  }
+}
+
+query GetSubmissionsByStudent($studentId: ID!) {
+  submissionsByStudent(studentId: $studentId) {
+    id
+    homeworkId
+    submittedAt
+  }
+}
+
+# Announcement queries
+query GetAnnouncement($id: ID!) {
+  announcement(id: $id) {
+    id
+    courseId
+    title
+    content
+  }
+}
+
+query GetAnnouncementsByCourse($courseId: ID!) {
+  announcementsByCourse(courseId: $courseId) {
+    id
+    title
+    content
+    createdAt
+  }
+}
+
+
+# =========================
+# MUTATIONS
+# =========================
+
+# Student mutations
+mutation CreateStudent($input: NewStudent!) {
+  createStudent(input: $input) {
+    id
+    firstName
+    lastName
+    email
+    phoneNumber
+  }
+}
+
+mutation UpdateStudent($id: ID!, $input: UpdateStudent!) {
+  updateStudent(id: $id, input: $input) {
+    id
+    firstName
+    lastName
+    email
+    phoneNumber
+  }
+}
+
+mutation DeleteStudent($id: ID!) {
+  deleteStudent(id: $id)
+}
+
+# Staff mutations
+mutation CreateStaff($input: NewStaff!) {
+  createStaff(input: $input) {
+    id
+    firstName
+    lastName
+    email
+    phoneNumber
+    title
+    office
+  }
+}
+
+mutation UpdateStaff($id: ID!, $input: UpdateStaff!) {
+  updateStaff(id: $id, input: $input) {
+    id
+    firstName
+    lastName
+    email
+    phoneNumber
+    title
+    office
+  }
+}
+
+mutation DeleteStaff($id: ID!) {
+  deleteStaff(id: $id)
+}
+
+# Course mutations
+mutation CreateCourse($input: NewCourse!) {
+  createCourse(input: $input) {
+    id
+    name
+    semester
+    description
+  }
+}
+
+mutation UpdateCourse($id: ID!, $input: UpdateCourse!) {
+  updateCourse(id: $id, input: $input) {
+    id
+    name
+    semester
+    description
+  }
+}
+
+mutation DeleteCourse($id: ID!) {
+  deleteCourse(id: $id)
+}
+
+# Course enrollment mutations
+mutation AddStudentToCourse($courseId: ID!, $studentId: ID!) {
+  addStudentToCourse(courseId: $courseId, studentId: $studentId)
+}
+
+mutation RemoveStudentFromCourse($courseId: ID!, $studentId: ID!) {
+  removeStudentFromCourse(courseId: $courseId, studentId: $studentId)
+}
+
+mutation AddStaffToCourse($courseId: ID!, $staffId: ID!) {
+  addStaffToCourse(courseId: $courseId, staffId: $staffId)
+}
+
+mutation RemoveStaffFromCourse($courseId: ID!, $staffId: ID!) {
+  removeStaffFromCourse(courseId: $courseId, staffId: $staffId)
+}
+
+# Grade mutations
+mutation CreateGrade($input: NewGrade!) {
+  createGrade(input: $input) {
+    id
+    studentId
+    courseId
+    semester
+    gradeType
+    itemId
+    gradeValue
+  }
+}
+
+mutation UpdateGrade($id: ID!, $input: UpdateGrade!) {
+  updateGrade(id: $id, input: $input) {
+    id
+    gradeValue
+    comments
+  }
+}
+
+mutation DeleteGrade(
+  $id: ID!,
+  $courseId: ID!,
+  $semester: String!,
+  $studentId: ID!,
+  $gradeType: String!,
+  $itemId: String!
+) {
+  deleteGrade(
+    id: $id,
+    courseId: $courseId,
+    semester: $semester,
+    studentId: $studentId,
+    gradeType: $gradeType,
+    itemId: $itemId
+  )
+}
+
+# Homework mutations
+mutation CreateHomework($input: NewHomework!) {
+  createHomework(input: $input) {
+    id
+    courseId
+    title
+    dueDate
+  }
+}
+
+mutation SubmitHomework($homeworkId: ID!, $studentId: ID!) {
+  submitHomework(homeworkId: $homeworkId, studentId: $studentId) {
+    id
+    submittedAt
+  }
+}
+
+# Announcement mutations
+mutation CreateAnnouncement($input: NewAnnouncement!) {
+  createAnnouncement(input: $input) {
+    id
+    courseId
+    title
+  }
+}
+
+mutation DeleteAnnouncement($courseId: ID!, $announcementId: ID!) {
+  deleteAnnouncement(courseId: $courseId, announcementId: $announcementId)
+}

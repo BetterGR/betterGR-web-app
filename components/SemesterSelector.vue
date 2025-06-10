@@ -37,10 +37,10 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { useSemester } from '~/composables/useSemester'
+import { useSemesters } from '~/composables/useSemesters'
 import { Calendar, ChevronDown } from 'lucide-vue-next'
 
-const { semesters, selectedSemesterId, currentSemester, setSemester } = useSemester()
+const { semesters, selectedSemesterId, currentSemester, setSemester } = useSemesters()
 
 const isOpen = ref(false)
 

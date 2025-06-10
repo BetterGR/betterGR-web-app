@@ -6,10 +6,12 @@
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
-    "preview": "nuxt preview"
+    "preview": "nuxt preview",
+    "codegen": "graphql-codegen --require dotenv/config --config codegen.yml --watch"
   },
   "dependencies": {
     "@nuxt/content": "^3.5.1",
+    "@nuxtjs/mdc": "^0.17.0",
     "@pinia/nuxt": "^0.11.0",
     "@vueuse/core": "^13.2.0",
     "dotenv": "^16.5.0",
@@ -22,6 +24,10 @@
     "vuex": "^4.0.2"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.6",
+    "@graphql-codegen/typescript": "^4.1.6",
+    "@graphql-codegen/typescript-operations": "^4.6.1",
+    "@graphql-codegen/typescript-resolvers": "^4.5.1",
     "@nuxt/devtools": "^2.4.1",
     "@nuxt/types": "^2.18.1",
     "@nuxtjs/color-mode": "^3.5.2",

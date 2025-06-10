@@ -1,107 +1,94 @@
-import { computed, ref, onMounted, onBeforeUnmount, ComputedRef, Ref } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from './useAuth.js'
+import { useCourses } from './useCourses.js'
+import { useAssignments } from './useAssignments.js'
+import { useSemesters } from './useSemesters.js'
+import { useAnnouncements } from './useAnnouncements.js'
+import { useStudent } from './useStudent.js'
 
-// Define interfaces for our data structures
-export interface Course {
-  id: string;
-  title: string;
-  code: string;
-  slug: string;
-  semesterId: string;
-  [key: string]: any;
-}
-
-export interface Assignment {
-  id: string;
-  title: string;
-  description?: string;
-  course: string;
-  courseId: string;
-  dueDate: string;
-  status: string;
-  semesterId: string;
-  [key: string]: any;
-}
-
-export interface Semester {
-  id: string;
-  name: string;
-  [key: string]: any;
-}
-
-// Temporary data stubs (these should be imported from actual data sources)
-const courses: Course[] = []
-const assignments: Assignment[] = []
-
+/**
+ * Main dashboard composable that orchestrates the dashboard functionality
+ */
 export function useDashboard() {
   const router = useRouter()
   const route = useRoute()
-  
-  // Current semester (simplified mock implementation)
-  const currentSemester = ref<Semester>({
-    id: '1',
-    name: 'Current Semester'
-  })
-  
-  // Filter by semester function (simplified implementation)
-  const filterBySemester = <T extends { semesterId: string }>(items: T[]): T[] => {
-    return items.filter(item => item.semesterId === currentSemester.value.id)
-  }
-  
   const auth = useAuth()
-
-  // Authentication state
+  
+  //-------------------------------------------------------
+  // STATE MANAGEMENT
+  //-------------------------------------------------------
+  
+  // Get required state from auth
   const checking = ref(true)
   const isAuthenticated = computed(() => auth.isAuthenticated.value)
   const username = computed(() => auth.userName.value)
   const userId = computed(() => auth.userId.value)
-  let tokenRefreshInterval: NodeJS.Timeout | null = null
 
-  // Filter courses by semester
-  const filteredCourses = computed(() => filterBySemester(courses))
+  const{
+    student,
+    loading: loadingStudent,
+    error: studentError,
+    fetchStudent,
+    updateStudentReq
+  } = useStudent()
+  
+  
+  // Get semester management
+  const { currentSemester, semesters, updateSemesters } = useSemesters()
+  
+  // Get course management
+  const { 
+    courses, 
+    loading: loadingCourses, 
+    error: coursesError,
+    fetchCourses 
+  } = useCourses()
+  
+  // Get assignment management
+  const { 
+    upcomingAssignments,
+    pending,
+    upcoming,
+    updateAssignments
+  } = useAssignments(computed(() => currentSemester.value.id))
+  
+  // Get announcements management
+  const {
+    recentAnnouncements,
+    loading: loadingAnnouncements,
+    error: announcementsError,
+    fetchRecentAnnouncementsFromCourses,
+    clearAnnouncements
+  } = useAnnouncements()
 
-  // Filter assignments by semester and only pending or overdue
-  const filteredAssignments = computed(() => {
-    return assignments.filter(assignment => 
-      assignment.semesterId === currentSemester.value.id && 
-      (assignment.status === 'pending' || assignment.status === 'overdue')
-    )
-  })
+  //-------------------------------------------------------
+  // DATA FILTERING & COMPUTED PROPERTIES
+  //-------------------------------------------------------
+  
+  // Filter by semester helper function
+  const filterBySemester = <T extends { semesterId: string }>(items: T[]): T[] => {
+    // If "All Semesters" is selected, return all items
+    if (currentSemester.value.id === 'all') {
+      return items
+    }
+    // Otherwise filter by the selected semester
+    return items.filter(item => item.semesterId === currentSemester.value.id)
+  }
+  
+  // Filtered courses for current semester
+  const filteredCourses = computed(() => filterBySemester(courses.value))
 
-  // Sort assignments by due date and limit to 5
-  const upcomingAssignments = computed(() => {
-    return filteredAssignments.value
-      .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
-      .slice(0, 5)
-  })
-
-  // Statistics for dashboard metrics
-  const pending = computed(() => 
-    assignments.filter(a => 
-      a.semesterId === currentSemester.value.id && 
-      a.status === 'pending'
-    ).length
-  )
-
-  const upcoming = computed(() => {
-    const now = new Date()
-    const oneWeekLater = new Date()
-    oneWeekLater.setDate(now.getDate() + 7)
-    
-    return assignments.filter(a => {
-      const dueDate = new Date(a.dueDate)
-      return a.semesterId === currentSemester.value.id && 
-            a.status === 'pending' && 
-            dueDate >= now && 
-            dueDate <= oneWeekLater
-    }).length
-  })
-
-  async function login(): Promise<void> {
+  //-------------------------------------------------------
+  // AUTHENTICATION FUNCTIONS
+  //-------------------------------------------------------
+  
+  // Login function
+  function login(): void {
     auth.login()
   }
 
+  // Logout function
   function logout(): void {
     // Set intentional logout flag to differentiate from session timeouts
     sessionStorage.setItem('intentional_logout', 'true')
@@ -110,18 +97,10 @@ export function useDashboard() {
 
   // Handle redirects after successful authentication
   function handlePostLoginRedirect(): void {
-    // Check if we have a stored redirect path
-    const redirectPath = sessionStorage.getItem('login_redirect_path')
-    if (redirectPath && isAuthenticated.value) {
-      // Remove the stored path
-      sessionStorage.removeItem('login_redirect_path')
-      
-      // Only redirect if not already on that path
-      if (route.fullPath !== redirectPath) {
-        console.log('Redirecting to stored path after login:', redirectPath)
-        router.push(redirectPath)
-      }
-    }
+    // Redirect to stored path after login, or to index page as default
+    const redirectPath = sessionStorage?.getItem('login_redirect_path') || '/'
+    sessionStorage?.removeItem('login_redirect_path')
+    router.replace(redirectPath)
   }
 
   // Check authentication status in the background
@@ -143,14 +122,8 @@ export function useDashboard() {
       try {
         await auth.updateToken(60)
       } catch (err) {
-        console.warn('Token update failed:', err)
+        // Token update failed - handled by auth system
       }
-      
-      console.log('Auth check complete:', {
-        isAuthenticated: isAuthenticated.value,
-        username: username.value,
-        hasToken: !!auth.token.value
-      })
       
       // Handle any redirect after successful login
       if (isAuthenticated.value) {
@@ -185,7 +158,6 @@ export function useDashboard() {
     
     // Intentional logout or logout parameter
     if (urlParams.has('logout') || intentionalLogout) {
-      console.log('User was logged out:', intentionalLogout ? 'intentionally' : 'session expired')
       sessionStorage.removeItem('intentional_logout')
       return true
     }
@@ -193,37 +165,10 @@ export function useDashboard() {
     return false
   }
 
-  // Set up periodic token refresh
-  function setupTokenRefresh(): void {
-    // Clear any existing interval
-    if (tokenRefreshInterval) {
-      clearInterval(tokenRefreshInterval)
-    }
-    
-    // Set up new interval (every 5 minutes)
-    tokenRefreshInterval = setInterval(() => {
-      if (auth.isAuthenticated.value) {
-        auth.updateToken(60).catch((err: Error) => {
-          console.warn('Background token refresh failed:', err)
-        })
-      }
-    }, 5 * 60 * 1000) // 5 minutes
-  }
-
-  // Register auth event listeners
-  let unsubscribeSuccess = () => {}
-  let unsubscribeLogout = () => {}
-
-  function setupAuthListeners(): void {
-    unsubscribeSuccess = auth.onAuthEvent('auth:success', () => {
-      checkAuth() // Re-check auth state to get user details
-    })
-
-    unsubscribeLogout = auth.onAuthEvent('auth:logout', () => {
-      checking.value = false
-    })
-  }
-
+  //-------------------------------------------------------
+  // INITIALIZATION & LIFECYCLE
+  //-------------------------------------------------------
+  
   // Initial setup
   function initialize(): void {
     // Allow partial UI rendering while checking in background
@@ -238,30 +183,49 @@ export function useDashboard() {
       // If in logout flow, immediately set checking to false
       checking.value = false
     }
+  }
+  
+  // Watch for changes to update derived data
+  function setupWatchers() {
+    // Update semester list when courses change
+    watch(courses, () => {
+      updateSemesters()
+      updateAssignments()
+    })
     
-    // Set up token refresh
-    setupTokenRefresh()
+    // Watch for filtered courses to update announcements
+    watch(filteredCourses, (newCourses) => {
+      if (filteredCourses.value.length > 0) {
+        fetchRecentAnnouncementsFromCourses(filteredCourses.value)
+      }
+    }, { immediate: true })
     
-    // Set up auth listeners
-    setupAuthListeners()
+    // Watch for auth changes and fetch courses when user signs in
+    watch(isAuthenticated, (newValue: boolean) => {
+      if (newValue && userId.value) {
+        fetchCourses()
+      } else {
+        // Clear courses and announcements when user logs out
+        courses.value = []
+        clearAnnouncements()
+      }
+    }, { immediate: true })
   }
 
   // Set up initialization and cleanup
   onMounted(() => {
     initialize()
-  })
-
-  onBeforeUnmount(() => {
-    // Clean up token refresh interval
-    if (tokenRefreshInterval) {
-      clearInterval(tokenRefreshInterval)
-    }
+    setupWatchers()
     
-    // Unsubscribe from auth events
-    unsubscribeSuccess()
-    unsubscribeLogout()
+    // Auto-fetch courses when authenticated
+    if (isAuthenticated.value && userId.value) {
+      fetchCourses()
+    }
   })
 
+  //-------------------------------------------------------
+  // RETURN COMPOSABLE API
+  //-------------------------------------------------------
   return {
     // Auth state
     checking,
@@ -273,16 +237,35 @@ export function useDashboard() {
     
     // Semester data
     currentSemester,
+    semesters,
     
     // Course and assignment data
     filteredCourses,
     upcomingAssignments,
+    courses, 
+    
+    // Loading states
+    loadingCourses,
+    coursesError,
     
     // Metrics
     pending,
     upcoming,
     
-    // Extra helpers
-    handlePostLoginRedirect
+    // Announcements
+    recentAnnouncements,
+    loadingAnnouncements,
+    announcementsError,
+
+    //student
+    student,
+    loadingStudent,
+    studentError,
+    
+    // Helpers
+    handlePostLoginRedirect,
+    fetchStudent,
+    updateStudentReq,
+    fetchCourses
   }
 } 

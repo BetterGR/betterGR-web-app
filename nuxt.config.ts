@@ -1,5 +1,6 @@
 import { defineNuxtConfig } from 'nuxt/config'
 import { NuxtConfig } from '@nuxt/types'
+import type Keycloak from 'keycloak-js'
 
 // Validate required environment variables
 const requiredEnvVars = [
@@ -33,24 +34,31 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
   ],
 
+  // Auto-imports configuration
+  imports: {
+    autoImport: true,
+  },
+
   typescript: {
     strict: true,
     typeCheck: false,
-    shim: false
+    shim: true
   },
 
   runtimeConfig: {
     public: {
       isDev,
       keycloak: keycloakConfig,
-      // Make the environment variables directly accessible by the same name
+      // GraphQL configuration
+      GQL_HOST: process.env.NUXT_PUBLIC_GRAPHQL_HOST,
+      // Other variables
       NUXT_PUBLIC_KEYCLOAK_URL: process.env.NUXT_PUBLIC_KEYCLOAK_URL,
       NUXT_PUBLIC_KEYCLOAK_REALM: process.env.NUXT_PUBLIC_KEYCLOAK_REALM,
       NUXT_PUBLIC_KEYCLOAK_CLIENT_ID: process.env.NUXT_PUBLIC_KEYCLOAK_CLIENT_ID,
       // Keep the old ones for backward compatibility
-      keycloakUrl: process.env.NUXT_PUBLIC_KEYCLOAK_URL || 'http://localhost:8080',
-      keycloakRealm: process.env.NUXT_PUBLIC_KEYCLOAK_REALM || 'master',
-      keycloakClientId: process.env.NUXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'betterGR-web-app',
+      keycloakUrl: process.env.NUXT_PUBLIC_KEYCLOAK_URL,
+      keycloakRealm: process.env.NUXT_PUBLIC_KEYCLOAK_REALM,
+      keycloakClientId: process.env.NUXT_PUBLIC_KEYCLOAK_CLIENT_ID,
       content: {
         documentDriven: true,
         navigation: {
@@ -159,27 +167,66 @@ export default defineNuxtConfig({
     dirs: ['~/components']
   },
 
-  graphqlClient: {
+  'graphql-client':{
     clients: {
       default: {
-        host: process.env.NUXT_PUBLIC_GRAPHQL_HOST,
-        // Optional websocket endpoint if you need subscriptions
-        wsHost: process.env.NUXT_PUBLIC_GRAPHQL_WS_HOST,
-        retries: 3,
-        // Add token to GraphQL requests
-        tokenName: 'Authorization',
-        tokenType: 'Bearer',
-        tokenStorage: 'none', // Don't store in localStorage or cookies
+        host: '/api/graphql',
+        introspectionHost: process.env.NUXT_PUBLIC_GRAPHQL_HOST,
+        token: {
+          type: 'Bearer',
+          name: 'Authorization',
+          value: (nuxtApp: any) => {
+            // Add robust token handling with debug information
+            try {
+              // Get Keycloak instance from the Nuxt app
+              const keycloak = nuxtApp?.$keycloak
+              
+              // Check if Keycloak exists and is authenticated
+              if (!keycloak) {
+                console.warn('[GraphQL] No Keycloak instance found')
+                return ''
+              }
+              
+              if (!keycloak.authenticated) {
+                console.warn('[GraphQL] Keycloak not authenticated')
+                return ''
+              }
+              
+              // Force check token expiry to ensure we have fresh tokens
+              if (keycloak.token) {
+                try {
+                  // Parse token to check expiry
+                  const tokenParts = keycloak.token.split('.')
+                  if (tokenParts.length === 3) {
+                    const payload = JSON.parse(atob(tokenParts[1]))
+                    const expiresIn = payload.exp * 1000 - Date.now()
+                    
+                    // If token expires in less than 30 seconds, the GraphQL wrapper should handle refresh
+                    if (expiresIn < 30000 && process.env.NODE_ENV === 'development') {
+                      console.warn('[GraphQL] Token expiring soon, GraphQL wrapper should refresh')
+                    }
+                  }
+                } catch (e) {
+                  console.warn('[GraphQL] Could not parse token expiry:', e)
+                }
+                
+                return keycloak.token
+              } else {
+                console.warn('[GraphQL] Token is empty or undefined')
+                return ''
+              }
+            } catch (error) {
+              console.error('[GraphQL] Error getting token:', error)
+              return ''
+            }
+          }
+        },
+        retainToken: false // Don't cache tokens, always get fresh ones
       }
-    },
-    options: {
-      persistedQueries: false,
-      cache: true,
-    },
+    }
   },
 
   plugins: [
     '~/plugins/keycloak.client.ts',
-    '~/plugins/graphql-auth.client.ts',
   ],
 } as any)

@@ -4,7 +4,7 @@
       <div>
         <h1 class="text-3xl font-bold tracking-tight mb-2">Assignments</h1>
         <p class="text-muted-foreground">
-          Track and manage all your coursework for {{ currentSemester.name }}
+          Track and manage all your coursework
         </p>
       </div>
       <div class="flex items-center gap-2">
@@ -22,13 +22,8 @@
           class="rounded-md border bg-background px-3 py-2 text-sm"
         >
           <option value="all">All Courses</option>
-          <option 
-            v-for="course in filteredCoursesBySelectedSemester" 
-            :key="course.id" 
-            :value="course.id"
-          >
-            {{ course.title }}
-          </option>
+          <option value="234124">Yearly Project</option>
+          <option value="236781">Deep Learning</option>
         </select>
       </div>
     </div>
@@ -83,32 +78,24 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useSemester } from '~/composables/useSemester'
-import { courses } from '@/data/courses'
 import { assignments as assignmentsData } from '@/data/assignments'
-
-// Get semester data from our composable
-const { currentSemester, filterBySemester } = useSemester()
 
 // Local filters for this page
 const statusFilter = ref('all')
 const courseFilter = ref('all')
-
-// Filter courses by selected semester
-const filteredCoursesBySelectedSemester = computed(() => filterBySemester(courses))
 
 // Make assignments reactive
 const assignments = ref(assignmentsData)
 
 // Filtered assignments based on selected filters
 const filteredAssignments = computed(() => {
-  return assignments.value.filter(assignment => {
-    // Only show assignments for the current semester
-    const semesterMatch = assignment.semesterId === currentSemester.value.id
-    const statusMatch = statusFilter.value === 'all' || assignment.status === statusFilter.value
-    const courseMatch = courseFilter.value === 'all' || assignment.courseId === courseFilter.value
-    return semesterMatch && statusMatch && courseMatch
-  })
+  return assignments.value
+    .filter(assignment => {
+      const statusMatch = statusFilter.value === 'all' || assignment.status === statusFilter.value
+      const courseMatch = courseFilter.value === 'all' || assignment.courseId === courseFilter.value
+      return statusMatch && courseMatch
+    })
+    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
 })
 
 // These functions will call the API in the future
